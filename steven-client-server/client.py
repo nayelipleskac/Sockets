@@ -16,7 +16,7 @@ class Client:
 
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.HOST, self.PORT))
+        self.socket.connect((self.HOST, self.PORT))
 
     def setup(self):
         pygame.init()
@@ -26,7 +26,7 @@ class Client:
         
     def start(self):
         print("Connected to ", self.HOST)
-        s.sendall('Connection establish'.encode())
+        self.socket.sendall('Connection establish'.encode())
 
         while self.running:
             pygame.display.update()

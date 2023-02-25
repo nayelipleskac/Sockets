@@ -38,12 +38,12 @@ class TicTacToe():
                 pygame.draw.rect(self.screen,(255,255,255), (x,y,200,200),1)
         print('client: set up game board')
         while self.running:
-            data = self.s.recv(1024).decode()
+            pygame.display.update()
+            data = self.s.recv(1024).decode() #put inside pygame.event loop
             print('server pos: ', data)
             if not data:
                 print(data)
-
-            pygame.display.update()
+            
             for event in pygame.event.get():
                 print('Client: in pygame event loop')
                 if event.type == pygame.QUIT:
@@ -61,7 +61,7 @@ class Client():
         self.screen = None
         self.player = 'o'
         self.g = TicTacToe()
-        self.connect()
+        # self.connect()
         # self.g = TicTacToe()
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
