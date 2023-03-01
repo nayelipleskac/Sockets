@@ -1,4 +1,5 @@
 import socket, atexit, pygame, time
+import threading
 from pygame.constants import KEYDOWN, KEYUP, K_DOWN, K_UP, K_s, K_w
 from pygame.locals import *
 
@@ -53,22 +54,64 @@ class TicTacToe():
                     x,y = pygame.mouse.get_pos()
                     print('client: ','x: {}, y: {}'.format(x,y)) 
                     # self.s.sendall(data.encode())
+
         
-class Client():
-    def __init__(self):
-        self.host = '127.0.0.1' #localhost
-        self.port = 1234
+class Client(socket.socket):
+    def __init__(self, host, port):
+        super().__init__(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = host #localhost
+        self.port = port
         self.screen = None
         self.player = 'o'
         self.g = TicTacToe()
+        self.running = True
+        self.na = socket.gethostname()
+        # self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.connect()
         # self.g = TicTacToe()
+
+    def accept_message(self):
+        while True:
+            data = self.recv(1024).decode()
+            if not data: 
+                break
+            print('Recieved', data)
     def start(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self.host, self.port))
-            print('Client: Connected to ', self.host)
-            s.sendall('Client: connection established'.encode())
-            self.g.play(s)
+    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        self.connect((self.host, self.port))
+        self.sendall('Connection established'.encode())
+        pygame.init()
+
+        self.screen = pygame.display.set_mode((600,600))
+        pygame.display.set_caption("Tic-Tac-Toe client")
+        for x in range(0,600,200):
+            for y in range(0,600,200):
+                pygame.draw.rect(self.screen,(255,255,255), (x,y,200,200),1)
+        self.clock = pygame.time.Clock()
+
+        while self.running:
+            self.clock.tick(60)
+            self.create_thread(self.accept_message)
+            pygame.display.update()
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    x, y = pygame.mouse.get_pos()
+                    print("x:{}, y:{}".format(x,y))
+                    self.sendall("{},{}".format(x,y).encode())
+    def create_thread(self, target):
+        t = threading.Thread(target = target) #argument - target function
+        t.daemon = True
+        t.start()
+            
+            
+    # def start(self):
+    #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #         s.connect((self.host, self.port))
+    #         print('Client: Connected to ', self.host)
+    #         s.sendall('Client: connection established'.encode())
+    #         self.g.play(s)
 
 
     def startGame(self):
@@ -120,7 +163,7 @@ class Client():
 
 if __name__ == '__main__':
     app = TicTacToe()
-    client = Client()
+    client = Client('127.0.0.1', 1234)
     client.start()
     # client.start()
 

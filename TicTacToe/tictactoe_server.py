@@ -40,11 +40,6 @@ class TicTacToe():
             pygame.display.update()
 
             for event in pygame.event.get():
-                data= self.conn.recv(1024).decode('utf-8')
-                if not data:
-                    pass
-                print('recieved', data)
-
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
@@ -67,6 +62,7 @@ class Server():
         self.player= ''
         self.g = TicTacToe()
         #self.connect in __init__
+    
     def start(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port)) #start server connection 
